@@ -1,0 +1,51 @@
+Uygulama Teması ve Adı:
+
+Tema: Medyanes-360'ın "startup projeleri" ve "yeni girişimler için teknolojiler" vurgusunu yansıtan, profesyonel bir proje yönetim aracı veya görev takip sistemi teması seçilebilir.
+Adı: "Medyanes Görev Yöneticisi", "Medyanes Proje Takip", "Medyanes Dijital Ajanda" gibi şirketin adını çağrıştıran ve işlevini anlatan bir isim kullanabilirsiniz.
+Temel Fonksiyonlar (CRUD İşlemleri):
+
+Görev Ekleme (Create):
+Görev başlığı (zorunlu).
+Görev açıklaması (isteğe bağlı, detaylı bilgi için).
+Son teslim tarihi (isteğe bağlı, tarih seçici ile).
+Öncelik (Düşük, Orta, Yüksek - renk kodlaması ile görselleştirilebilir).
+Kategori (İş, Kişisel, Geliştirme, Acil vb. - kullanıcı tanımlı veya hazır seçenekler).
+Görev Listeleme (Read):
+Tüm görevleri listeleyen ana görünüm.
+Tamamlanmış ve tamamlanmamış görevlerin görsel ayrımı (örn. tamamlanmış olanların üzeri çizili, gri renkli).
+Görevleri son teslim tarihine, önceliğe veya kategoriye göre sıralama/filtreleme seçenekleri.
+Görev arama çubuğu.
+Görev Güncelleme (Update):
+Mevcut bir görevin detaylarını (başlık, açıklama, tarih, öncelik, kategori) düzenleme.
+Görevi "tamamlandı" olarak işaretleme/işaretini kaldırma butonu.
+Görev Silme (Delete):
+Bir görevi listeden kalıcı olarak silme butonu (onay uyarısı ile).
+Medyanes-360 Vizyonuna Özel Ek Geliştirmeler (4 Günlük Süreye Yayarak):
+
+Kullanıcı Arayüzü (UI) ve Kullanıcı Deneyimi (UX):
+
+Modern ve Temiz Tasarım: Tailwind CSS kullanarak Medyanes-360'ın kurumsal kimliğini yansıtan, profesyonel ve minimalist bir arayüz tasarlayın. Renk paletini şirketin web sitesinden ilham alarak belirleyebilirsiniz.
+Duyarlı Tasarım: Uygulamanın farklı ekran boyutlarında (mobil, tablet, masaüstü) sorunsuz çalışmasını sağlayın.
+İkon Kullanımı: Ekleme, düzenleme, silme, tamamlama gibi işlemler için anlaşılır ikonlar kullanın.
+Hoş Geçişler/Animasyonlar: Görev ekleme, silme gibi işlemlerde kullanıcıya geri bildirim veren küçük animasyonlar veya geçişler ekleyebilirsiniz (örn. görev silindiğinde hafifçe kaybolma).
+State Management (Zustand):
+
+Görev durumu (tamamlandı/beklemede), filtreleme ayarları (aktif filtre), arama terimi gibi tüm uygulama durumlarını Zustand ile yönetin. Bu, uygulamanın karmaşıklaştıkça bile performanslı kalmasını sağlar.
+Backend Yapısı (Next.js API Routes, Prisma, MongoDB):
+
+
+Medyanes-360 Örnek Repo Yapısını Takip Edin: Verilen örnek repodaki pages/api/test yapısını ve Services klasöründeki FetchApi, PostApi, GetApi fonksiyonlarını kullanarak API isteklerinizi düzenleyin. Bu, kod kalitenizi ve talimatlara uygunluğunuzu gösterecektir.
+
+API Endpoints:
+/api/todos (GET: tüm todoları getir, POST: yeni todo ekle)
+/api/todos/[id] (GET: belirli bir todoyu getir, PUT: belirli bir todoyu güncelle, DELETE: belirli bir todoyu sil)
+Prisma ve MongoDB: Veritabanı modelinizi Prisma ile tanımlayın ve MongoDB'yi kullanın. Task'ta belirtildiği gibi allow anywhere (0.0.0.0) ip izni verdiğinizden emin olun ki projeniz lokalde çalışabilsin.
+Hata Yönetimi ve Geri Bildirim:
+
+API istekleri sırasında oluşabilecek hataları (örn. ağ bağlantısı yok, sunucu hatası) kullanıcıya bildirin (örn. Toast mesajları ile).
+Geçersiz girişleri (örn. boş başlık) form validasyonu ile engelleyin ve kullanıcıya uyarı mesajları gösterin.
+Deployment (Vercel):
+
+
+Uygulamayı Vercel'da yayınlayın ve canlı linkini paylaşın.
+GitHub reposunun doğrudan indirip çalıştırılabilir olduğundan emin olun. package.json'daki bağımlılıklar ve .env dosyasının (örnek olarak .env.example veya gerekli değişkenlerin açıklanmasıyla) doğru olduğundan emin olun.
