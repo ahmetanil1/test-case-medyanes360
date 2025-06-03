@@ -5,7 +5,7 @@ const postAPI = async (
   headers = { "Content-Type": "application/json" }
 ) => {
   try {
-    if (!process.env.NEXT_PUBLIC_API_URL || !URL) {
+    if (!process.env.NEXT_PUBLIC_BACKEND_URL || !URL) {
       throw new Error("URL bulunamadı!");
     }
     const data = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL + URL}`, {
