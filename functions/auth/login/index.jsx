@@ -14,7 +14,7 @@ export const loginFunction = async (data) => {
         if (!user || user.error) {
             return { error: "Kullanıcı bulunamadı.", status: 404 };
         }
-        const PasswordFromDB = role == "Admin" ? user.password + process.env.ADMIN_PASSWORD : user.password;
+        const PasswordFromDB = user.role == "Admin" ? user.password + process.env.ADMIN_PASSWORD : user.password;
         const passwordCheck = await DecryptPassword(PasswordFromDB, password);
 
         if (!passwordCheck || passwordCheck == null || passwordCheck == undefined) {
