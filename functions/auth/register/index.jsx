@@ -3,9 +3,9 @@ import { createNewData, getDataByUnique } from "@/services/serviceOperation";
 
 export const registerFunction = async (user) => {
     try {
-        const { email, name, surname, role } = user;
+        const { email, name, surname, password } = user;
         if (!email || !password || !name || !surname) {
-            return res.status(400).json({ message: "Tüm alanlar zorunludur." });
+            throw new Error("Email, şifre, ad ve soyad zorunludur.");
         }
 
         const allUserCheck = await getDataByUnique('AllUser', {
@@ -13,22 +13,21 @@ export const registerFunction = async (user) => {
         });
 
         if (allUserCheck != null && !allUserCheck.error) {
-            return res.status(409).json({ message: "Bu email adresi zaten kayıtlı." });
+            throw new Error("Bu email zaten kayıtlı.");
         }
-        else {
-            const userFromDB = await createNewData('AllUser', {
-                email: email,
-                name: name,
-                role: role,
-                surname: surname
-            });
-            if (userFromDB.error || !userFromDB) {
-                return { error: 'Kayıt oluşturulamadı. REGXR' };
-            }
-        }
-        return res.status(201).json({ message: "Kullanıcı başarıyla oluşturuldu." });
+        const userFromDB = await createNewData('AllUser', {
+            email: email,
+            name: name,
+            password: password,
+            surname: surname
+        });
+        return {
+            message: "Kullanıcı başarıyla oluşturuldu.",
+            status: "success",
+            user: userFromDB
+        };
     } catch (error) {
         console.error("Register error:", error);
-        return res.status(500).json({ message: error.message || "Internal server error." });
+        return { message: error.message || "Internal server error.", status: "error" };
     }
 }
