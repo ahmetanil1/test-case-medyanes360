@@ -49,3 +49,15 @@ Deployment (Vercel):
 
 Uygulamayı Vercel'da yayınlayın ve canlı linkini paylaşın.
 GitHub reposunun doğrudan indirip çalıştırılabilir olduğundan emin olun. package.json'daki bağımlılıklar ve .env dosyasının (örnek olarak .env.example veya gerekli değişkenlerin açıklanmasıyla) doğru olduğundan emin olun.
+
+
+
+
+
+---------------ENDPOINTS-------------------
+GET /api/todos/all: Tüm todoları getir (veya belirli bir kullanıcıya ait olanları)
+GET /api/todos/single/todo_id_here: Belirli bir todo'yu getir
+POST /api/todos/create: Yeni todo oluştur
+POST /api/todos/update/todo_id_here: Belirli bir todo'yu güncelle
+DELETE /api/todos/delete/todo_id_here: Belirli bir todo'yu sil
+DELETE /api/todos/deleteAll: Tüm todoları sil (kullanıcıya ait olanları)
