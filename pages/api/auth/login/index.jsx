@@ -17,7 +17,7 @@ const handler = async (req, res) => {
                 throw error2;
             }
 
-            return res.status(200).json({ success: true, user: user, message: "Giriş işlemi başarılı" });
+            return res.status(200).json({ success: true, data: user, message: "Giriş işlemi başarılı" });
 
         } catch (error) {
             return res.status(500).json({ status: error.status, error: error.message });
