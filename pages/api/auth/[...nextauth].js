@@ -12,19 +12,21 @@ export const authOptions = {
       credentials: {
         email: { label: "Email", type: "text", placeholder: "Email" },
         password: { label: "Password", type: "password", placeholder: "Password" },
+        role: { label: "Role", type: "text", placeholder: "Role" }
       },
       async authorize(credentials) {
-        const { email, password } = credentials;
+        const { email, password, role } = credentials;
 
-        if (!email || !password) {
-          throw new Error("Email ve şifre zorunludur.");
+        if (!email || !password || !role) {
+          throw new Error("Email, şifre ve rol zorunludur.");
         }
         console.log("Attempting to log in with credentials:", { email, password });
-        const result = await postAPI("/auth/login", { email, password });
+        const result = await postAPI("/auth/login", { email, password, role });
         console.log("Login result:", result);
         const { data } = result;
 
         const user = {
+          id: data.id,
           role: data.role,
           name: data.name,
           email: data.email,
@@ -51,13 +53,24 @@ export const authOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("JWT Callback - Token:", token);
-      console.log("JWT Callback - User:", user);
-      return { ...token, ...user };
+      if (user) {
+        token.id = user.id; 
+        token.role = user.role; 
+        token.surname = user.surname;
+        token.name = user.name;
+        token.email = user.email;
+      }
+      return token;
     },
     async session({ session, token }) {
+      session.user = {
+        id: token.id, 
+        role: token.role,     
+        name: token.name,
+        email: token.email,
+        surname: token.surname,
+      };
 
-      session.user = token;
       return session;
     },
   },
