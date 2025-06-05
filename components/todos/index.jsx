@@ -187,7 +187,7 @@ function Todos({ user }) {
 
             <h2 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Todolarım</h2>
 
-            <div className="mb-6 text-right">
+            <div className="mb-6 text-center">
                 <button
                     onClick={() => setIsCreateModalOpen(true)}
                     className="px-6 py-2 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-colors font-medium"
