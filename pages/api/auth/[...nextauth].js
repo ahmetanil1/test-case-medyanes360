@@ -23,6 +23,10 @@ export const authOptions = {
         const result = await postAPI("/auth/login", { email, password, role });
         const { data } = result;
 
+        if (!data || !data.id) {
+          return null; // user doğrulanamadı
+        }
+
         const user = {
           id: data.id,
           role: data.role,
@@ -31,10 +35,7 @@ export const authOptions = {
           surname: data.surname,
         };
 
-        if (user) {
-          return user;
-        }
-
+        return user;
       }
     })
   ],
@@ -52,8 +53,8 @@ export const authOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id; 
-        token.role = user.role; 
+        token.id = user.id;
+        token.role = user.role;
         token.surname = user.surname;
         token.name = user.name;
         token.email = user.email;
@@ -62,8 +63,8 @@ export const authOptions = {
     },
     async session({ session, token }) {
       session.user = {
-        id: token.id, 
-        role: token.role,     
+        id: token.id,
+        role: token.role,
         name: token.name,
         email: token.email,
         surname: token.surname,
