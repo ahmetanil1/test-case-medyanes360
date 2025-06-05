@@ -9,7 +9,18 @@ export async function getDataByUnique(tableName, where) {
     }
 }
 
-export async function getAllData(tableName) {
+export async function getAllData(tableName, where) {
+    try {
+        const data = await prisma[tableName].findMany({
+            where: where
+        });
+        return data;
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
+export async function getAllDataAdmin(tableName) {
     try {
         const data = await prisma[tableName].findMany();
         return data;
