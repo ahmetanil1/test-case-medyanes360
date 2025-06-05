@@ -27,7 +27,6 @@ export const registerFunction = async (user) => {
             user: userFromDB
         };
     } catch (error) {
-        console.error("Register error:", error);
         return { message: error.message || "Internal server error.", status: 500, error: true };
     }
 }

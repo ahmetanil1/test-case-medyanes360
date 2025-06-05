@@ -18,27 +18,21 @@ const postAPI = async (
       cache: "no-store",
     });
 
-    console.log("Response URL:", response.url);
     if (response.url.includes("/notification") && response.redirected) {
       window.location.href = response.url;
-      return { redirected: true, url: response.url }; // Yönlendirme bilgisini döndür
+      return { redirected: true, url: response.url }; 
     }
     if (!response.ok) {
-      const errorData = await response.json(); // Hata detaylarını backend'den al
+      const errorData = await response.json(); 
       throw new Error(errorData.message || `HTTP hatası: ${response.status} ${response.statusText}`);
     }
     return await response.json();
 
   } catch (err) {
-    console.error("postAPI Hatası:", err);
     throw err;
   }
 };
 
-// Bu fonksiyonu dışa aktardığınızdan emin olun
-// Örneğin: export { postAPI };
-// Veya eğer dosyanın tek export'u ise: export default postAPI;
-// Öğrenci (kayıt) işlemleri için kullanılan servis
 const getAPI = async (
   URL,
   headers = { "Content-Type": "application/json" }
@@ -50,13 +44,12 @@ const getAPI = async (
   })
     .then((res) => {
       if (res.redirected) {
-        // bazı yerlerde window'u bulamıyor kontrol et
-        //return window.location.href = res.url;
       } else {
         return res.json();
       }
-    })
-    .catch((err) => console.log(err));
+    }).catch((err) => {
+      throw new Error(`GET isteği başarısız: ${err.message}`);
+    });
 
   return data;
 };

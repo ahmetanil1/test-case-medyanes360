@@ -22,7 +22,6 @@ const PriorityOptions = [
     { value: 'HIGH', label: 'Yüksek' },
 ];
 
-// Define defaultNewTodo outside the component to ensure a stable reference
 const defaultNewTodo = {
     title: '',
     description: '',
@@ -45,18 +44,12 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
     const currentUserId = session?.user?.id || '';
     const isAdmin = userRole === 'ADMIN';
 
-    // State for form data
-    // Use an initial state function if logic is complex and needs to run once.
-    // For simpler cases, a direct object or a prop is fine.
-    // We will primarily rely on the useEffect for populating based on mode/todo.
-    const [formData, setFormData] = useState({ ...defaultNewTodo }); // Start with a fresh copy of default
+    const [formData, setFormData] = useState({ ...defaultNewTodo }); 
 
     const [formError, setFormError] = useState(null);
     const [users, setUsers] = useState([]);
     const [fetchingUsers, setFetchingUsers] = useState(false);
 
-    // Effect 1: Initialize/Reset form data based on mode and 'todo' prop
-    // This runs when 'mode' changes or when 'todo.id' (or other stable todo props) change.
     useEffect(() => {
         if (mode === 'edit' && todo && todo.id) {
             setFormData({
@@ -68,31 +61,23 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 allUserId: todo.allUserId || '',
             });
         } else if (mode === 'create') {
-            // Reset to default new todo, but preserve allUserId if it was set by session/admin logic
             setFormData(prevData => ({
                 ...defaultNewTodo,
-                allUserId: prevData.allUserId || '' // Ensure allUserId is either current one or reset
+                allUserId: prevData.allUserId || ''
             }));
         }
-        // Only run when these props change, not on every render
     }, [mode, todo?.id, todo?.title, todo?.description, todo?.priority, todo?.category, todo?.isCompleted, todo?.allUserId]);
 
-
-    // Effect 2: Handle `allUserId` based on session and user role, and fetch users for admin.
-    // This effect handles the dynamic setting of `allUserId` AFTER the initial form setup.
     useEffect(() => {
         if (status === 'authenticated') {
             if (!isAdmin) {
-                // For regular users, set their ID as allUserId
                 setFormData(prevData => {
-                    // Only update if currentUserId is different and formData's allUserId is not already set to currentUserId
                     if (prevData.allUserId !== currentUserId) {
                         return { ...prevData, allUserId: currentUserId };
                     }
                     return prevData;
                 });
             } else if (isAdmin && mode === 'create') {
-                // For admins in create mode: fetch users if not already fetched and not currently fetching
                 if (users.length === 0 && !fetchingUsers) {
                     setFetchingUsers(true);
                     const fetchUsers = async () => {
@@ -100,7 +85,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                             const response = await getAPI('/users/all');
                             if (response.data) {
                                 setUsers(response.data);
-                                // Set the first user as default if allUserId is empty and users are available
                                 setFormData(prevData => {
                                     if (!prevData.allUserId && response.data.length > 0) {
                                         return { ...prevData, allUserId: response.data[0].id };
@@ -111,7 +95,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                                 setFormError(response.error || "Kullanıcılar alınırken bir sorun oluştu.");
                             }
                         } catch (err) {
-                            console.error("Kullanıcıları çekerken hata oluştu:", err);
                             setFormError(err.message || "Kullanıcılar yüklenirken bir hata oluştu.");
                         } finally {
                             setFetchingUsers(false);
@@ -121,10 +104,8 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 }
             }
         }
-    }, [status, isAdmin, currentUserId, mode, users.length, fetchingUsers]); // Depend on relevant states/props
+    }, [status, isAdmin, currentUserId, mode, users.length, fetchingUsers]); 
 
-    // This handleChange is correct and directly updates the formData state
-    // It should NOT be interfered with by the useEffects for standard user input.
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prevData => ({
@@ -139,7 +120,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
 
         let userIdToUse = formData.allUserId;
 
-        // If not admin and in create mode, ensure the current user's ID is used
         if (!isAdmin && mode === 'create') {
             userIdToUse = currentUserId;
         }
@@ -162,7 +142,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 }
             } else if (mode === 'edit') {
                 const updatedTodoData = { ...formData };
-                // Ensure the correct todo ID is used for the update endpoint
                 const response = await postAPI(`/todos/update/${todo.id}`, updatedTodoData, "POST");
                 if (response.todo) {
                     updateTodo(todo.id, response.todo);
@@ -173,7 +152,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 }
             }
         } catch (err) {
-            console.error("Form gönderilirken hata oluştu:", err);
             setFormError(err.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
         }
     };
@@ -189,7 +167,6 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 <p className="text-red-500 text-sm text-center">{formError}</p>
             )}
 
-            {/* Admin ve "create" modunda ise kullanıcı seçimi göster */}
             {isAdmin && mode === 'create' && (
                 <div>
                     <label htmlFor="allUserId" className="block text-sm font-medium text-gray-700">
@@ -201,12 +178,12 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                         <select
                             id="allUserId"
                             name="allUserId"
-                            value={formData.allUserId} // Controlled component
+                            value={formData.allUserId}
                             onChange={handleChange}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                            required={isAdmin} // Only required for admin in create mode
+                            required={isAdmin} 
                         >
-                            <option value="">-- Kullanıcı Seçin --</option> {/* Added a default empty option */}
+                            <option value="">-- Kullanıcı Seçin --</option>
                             {users.length > 0 ? (
                                 users.map((user) => (
                                     <option key={user.id} value={user.id}>
@@ -227,7 +204,7 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                     type="text"
                     id="title"
                     name="title"
-                    value={formData.title} // Controlled component
+                    value={formData.title}
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     required
@@ -239,7 +216,7 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 <textarea
                     id="description"
                     name="description"
-                    value={formData.description} // Controlled component
+                    value={formData.description}
                     onChange={handleChange}
                     rows="3"
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -251,7 +228,7 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 <select
                     id="category"
                     name="category"
-                    value={formData.category} // Controlled component
+                    value={formData.category} 
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 >
@@ -268,7 +245,7 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                 <select
                     id="priority"
                     name="priority"
-                    value={formData.priority} // Controlled component
+                    value={formData.priority} 
                     onChange={handleChange}
                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 >
@@ -286,7 +263,7 @@ function TodoForm({ mode = 'create', todo = {}, onSuccess, onCancel }) {
                         id="isCompleted"
                         name="isCompleted"
                         type="checkbox"
-                        checked={formData.isCompleted} // Controlled component
+                        checked={formData.isCompleted} 
                         onChange={handleChange}
                         className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                     />

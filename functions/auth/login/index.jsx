@@ -3,7 +3,6 @@ import { getDataByUnique } from "@/services/serviceOperation";
 import DecryptPassword from "../decryptPassword";
 
 export const loginFunction = async (data) => {
-    console.log("Login fonksiyonu çalışıyor", data);
     try {
         const { email, password, role = "USER" } = data;
 
@@ -16,8 +15,8 @@ export const loginFunction = async (data) => {
         if (!user || user.error) {
             return { error: { message: "Kullanıcı bulunamadı." }, status: 404 };
         }
-        if (user.role !== role) { // user.role sizin veritabanınızdaki rol alanı olmalı
-            return { error: { message: "Hatalı kullanıcı rolü veya giriş bilgileri." }, status: 403 }; // Forbidden
+        if (user.role !== role) {
+            return { error: { message: "Hatalı kullanıcı rolü veya giriş bilgileri." }, status: 403 }; 
         }
 
         const passwordCheck = await DecryptPassword(password, user.password);
@@ -27,11 +26,9 @@ export const loginFunction = async (data) => {
         }
 
         const { password: _, ...userWithoutPassword } = user;
-        console.log("Login başarılı, kullanıcı bilgileri:", userWithoutPassword);
 
         return { success: true, user: userWithoutPassword, status: 200 };
     } catch (error) {
-        console.error("Login fonksiyon hatası:", error);
         return { error: { message: error.message || "Internal server error." }, status: 500, success: false };
     }
 };

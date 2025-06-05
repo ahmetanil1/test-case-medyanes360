@@ -31,9 +31,7 @@ export async function getAllDataAdmin(tableName) {
 
 export async function createNewData(tableName, newData) {
     try {
-        console.log("createe new data içinde");
         const data = await prisma[tableName].create({ data: newData });
-        console.log("data", data);
         return data;
     } catch (error) {
         return { error: error.message };
@@ -45,7 +43,6 @@ export async function createNewDataMany(tableName, newDatas) {
         const data = await prisma[tableName].createMany({ data: newDatas });
         return data;
     } catch (error) {
-        console.error(`Error in createNewDataMany for ${tableName}:`, error);
         return { error: error.message || "Unknown error in createNewDataMany" };
     }
 }
@@ -58,7 +55,6 @@ export async function updateDataByAny(tableName, where, data) {
         });
         return updatedData;
     } catch (error) {
-        console.error(`Error in updateDataByAny for ${tableName}:`, error);
         return { error: error.message || "Unknown error in updateDataByAny" };
     }
 }
@@ -68,7 +64,6 @@ export async function deleteDataByAny(tableName, where) {
         const deletedData = await prisma[tableName].delete({ where: where });
         return deletedData;
     } catch (error) {
-        console.error(`Error in deleteDataByAny for ${tableName}:`, error);
         if (error.code === 'P2025') {
             return { error: "Record to delete not found." };
         }
@@ -80,7 +75,6 @@ export async function deleteDataAll(tableName, where = {}) {
         const result = await prisma[tableName].deleteMany({ where });
         return result;
     } catch (error) {
-        console.error(`Error in deleteDataAll for ${tableName}:`, error);
         return { error: error.message || "Unknown error in deleteDataAll" };
     }
 }
@@ -90,7 +84,6 @@ export async function getFirstDataByWhere(tableName, where) {
         const data = await prisma[tableName].findFirst({ where: where });
         return data;
     } catch (error) {
-        console.error(`Error in getFirstDataByWhere for ${tableName}:`, error);
         return { error: error.message || "Unknown error in getFirstDataByWhere" };
     }
 }
@@ -100,7 +93,6 @@ export async function updateManyData(tableName, where, data) {
         const result = await prisma[tableName].updateMany({ where, data });
         return result;
     } catch (error) {
-        console.error(`Error in updateManyData for ${tableName}:`, error);
         return { error: error.message || "Unknown error in updateManyData" };
     }
 }

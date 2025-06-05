@@ -1,4 +1,3 @@
-// components/Header.jsx
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
@@ -40,10 +39,8 @@ function Header() {
 
             <nav className="relative">
                 { session ? (
-                    // If logged in, display the UserBadge component directly
                     <UserBadge user={session.user} />
                 ) : (
-                    // If not logged in, display the dropdown for login/register
                     <ul className="flex space-x-4">
                         <li className="relative">
                             <button

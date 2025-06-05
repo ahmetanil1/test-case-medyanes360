@@ -20,9 +20,7 @@ export const authOptions = {
         if (!email || !password || !role) {
           throw new Error("Email, şifre ve rol zorunludur.");
         }
-        console.log("Attempting to log in with credentials:", { email, password });
         const result = await postAPI("/auth/login", { email, password, role });
-        console.log("Login result:", result);
         const { data } = result;
 
         const user = {

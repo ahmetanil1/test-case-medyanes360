@@ -1,4 +1,3 @@
-// components/Todos.jsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -9,7 +8,6 @@ import { getAPI, postAPI } from '@/services/fetchAPI';
 import { toast, ToastContainer } from 'react-toastify';
 const ITEMS_PER_PAGE = 6;
 
-// Helper function to capitalize the first letter of a string
 const capitalizeFirstLetter = (string) => {
     if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
@@ -37,35 +35,29 @@ function Todos({ user }) {
             try {
                 let response;
                 if (user.role === "ADMIN") {
-                    // Admin rolündeyse tüm todoları çek
                     response = await getAPI("/todos/all");
                 } else {
-                    // Normal kullanıcıysa sadece kendi todolarını çek
                     response = await getAPI("/todos/all", { userId: user.id });
                 }
                 if (response.todos) {
                     let fetchedTodos = response.todos;
 
-                    // Eğer kullanıcı ADMIN ise, her todo'nun sahibinin bilgilerini çek
                     if (user.role === "ADMIN") {
                         const todosWithOwners = await Promise.all(
                             fetchedTodos.map(async (todo) => {
                                 try {
                                     // todo.userId kullanarak kullanıcının adını ve soyadını çek
                                     const ownerResponse = await getAPI(`/users/${todo.allUserId}`);
-                                    console.log(`Todo ${todo.id} için sahip bilgisi alınıyor...`, ownerResponse);
                                     if (ownerResponse.success && ownerResponse.data) {
                                         return {
                                             ...todo,
-                                            // Apply capitalizeFirstLetter here
                                             ownerName: capitalizeFirstLetter(ownerResponse.data.name),
                                             ownerSurname: capitalizeFirstLetter(ownerResponse.data.surname),
                                         };
                                     }
                                 } catch (ownerErr) {
-                                    console.error(`Todo ${todo.id} için sahip bilgisi çekilirken hata oluştu:`, ownerErr);
                                 }
-                                return todo; // Hata durumunda veya bilgi bulunamazsa orijinal todo'yu döndür
+                                return todo; 
                             })
                         );
                         fetchedTodos = todosWithOwners;
@@ -78,7 +70,6 @@ function Todos({ user }) {
                     toast.error(response.error || "Todolar alınırken bir sorun oluştu.");
                 }
             } catch (err) {
-                console.error("Todoları çekerken hata oluştu:", err);
                 setError(err.message || "Todolar yüklenirken bir hata oluştu.");
                 toast.error(err.message || "Todolar yüklenirken bir hata oluştu.");
             } finally {
@@ -106,7 +97,6 @@ function Todos({ user }) {
 
         setIsLoading(true);
         try {
-            console.log(`Todoyu siliniyor: ${selectedTodo.id}`);
             await postAPI(`/todos/delete/${selectedTodo.id}`, {}, "DELETE");
             setTodos(todos.filter(todo => todo.id !== selectedTodo.id));
             toast.success("Todo başarıyla silindi.");
@@ -115,7 +105,6 @@ function Todos({ user }) {
                 setCurrentPage(prev => prev - 1);
             }
         } catch (err) {
-            console.error("Todoyu silerken hata oluştu:", err);
             setError(err.message || "Todoyu silerken bir hata oluştu.");
             toast.error(`Todoyu silerken hata oluştu: ${err.message || "Bilinmeyen Hata"}`);
         } finally {
@@ -140,7 +129,6 @@ function Todos({ user }) {
             } else {
                 response = await getAPI("/todos/all", { userId: user.id });
             }
-            console.log("Todos başarıyla güncellendi veya oluşturuldu:", response);
             if (response.todos) {
                 let fetchedTodos = response.todos;
                 if (user.role === "ADMIN") {
@@ -148,17 +136,14 @@ function Todos({ user }) {
                         fetchedTodos.map(async (todo) => {
                             try {
                                 const ownerResponse = await getAPI(`/users/${todo.allUserId}`);
-                                console.log(`Todo ${todo.id} için sahip bilgisi alınıyor...`, ownerResponse);
                                 if (ownerResponse.success && ownerResponse.data) {
                                     return {
                                         ...todo,
-                                        // Apply capitalizeFirstLetter here as well for updates/creates
                                         ownerName: capitalizeFirstLetter(ownerResponse.data.name),
                                         ownerSurname: capitalizeFirstLetter(ownerResponse.data.surname),
                                     };
                                 }
                             } catch (ownerErr) {
-                                console.error(`Todo ${todo.id} için sahip bilgisi çekilirken hata oluştu:`, ownerErr);
                             }
                             return todo;
                         })
@@ -173,7 +158,6 @@ function Todos({ user }) {
                 toast.error(response.error || "Todolar alınırken bir sorun oluştu.");
             }
         } catch (err) {
-            console.error("Todoları çekerken hata oluştu:", err);
             setError(err.message || "Todolar yüklenirken bir hata oluştu.");
             toast.error(err.message || "Todolar yüklenirken bir hata oluştu.");
         } finally {
@@ -249,7 +233,6 @@ function Todos({ user }) {
                                     }`}>
                                     {todo.isCompleted ? 'Tamamlandı' : 'Bekliyor'}
                                 </span>
-                                {/* Admin ise owner bilgilerini göster */}
                                 {user.role === "ADMIN" && todo.ownerName && todo.ownerSurname && (
                                     <span className="px-3 py-1 bg-cyan-500 text-white rounded-full font-medium">
                                         Sahibi: {todo.ownerName} {todo.ownerSurname}

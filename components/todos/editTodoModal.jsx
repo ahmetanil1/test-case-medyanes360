@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import TodoForm from '../other/modal'; // Form bileşeni
+import TodoForm from '../other/modal'; 
 
 function TodoModal({ isOpen, onClose, todo, mode, onSuccess, onDelete }) {
     if (!isOpen) return null;

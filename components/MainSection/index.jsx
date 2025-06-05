@@ -1,4 +1,3 @@
-// components/MainSection.jsx
 "use client"
 import React from 'react'
 import { useSession } from 'next-auth/react';
@@ -14,10 +13,8 @@ function MainSection() {
     }
 
     return (
-        // The outer div now ensures it takes at least the full screen height
-        // and allows for scrolling if content exceeds that.
         <div className="flex flex-grow items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-            <div className='w-full max-w-7xl mx-auto '> {/* flex-grow makes it take available space */}
+            <div className='w-full max-w-7xl mx-auto '> 
                 {session ? (
                     <Todos user={session.user} />
                 ) : (

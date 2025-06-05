@@ -9,7 +9,7 @@ const DecryptPassword = async (LoginPassword, databasePassword) => {
         if (!result) throw new Error("Password is wrong");
         return result;
     } catch (error) {
-        console.error(error);
+        
         return false;
     }
 }

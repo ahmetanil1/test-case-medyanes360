@@ -47,17 +47,14 @@ function RegisterComponent() {
                                 email: values.email,
                                 password: values.password,
                             });
-                            console.log("Kayıtlı kullanıcı:", res);
 
                             if (res?.error) {
                                 toast.error(res.error);
                             } else {
                                 toast.success("Kayıt Başarılı! Şimdi giriş yapabilirsiniz.");
-                                // Başarılı kayıttan sonra kullanıcıyı giriş sayfasına yönlendirebilirsiniz
                                 router.push('/login');
                             }
                         } catch (error) {
-                            console.error("Kayıt API hatası:", error);
                             toast.error("Kayıt sırasında bir hata oluştu.");
                         } finally {
                             setIsLoading(false);
@@ -74,7 +71,6 @@ function RegisterComponent() {
                                     Kayıt Ol
                                 </h2>
                             </div>
-                            {/* İsim Alanı */}
                             <div>
                                 <label htmlFor='name' className='block text-sm font-medium text-gray-700 mb-1'>İsim</label>
                                 <input
@@ -90,7 +86,6 @@ function RegisterComponent() {
                                 />
                                 <ErrorMessage name="name" component="div" className="text-red-500 text-xs mt-1" />
                             </div>
-                            {/* Soyisim Alanı */}
                             <div>
                                 <label htmlFor='surname' className='block text-sm font-medium text-gray-700 mb-1'>Soyisim</label>
                                 <input
@@ -106,7 +101,6 @@ function RegisterComponent() {
                                 />
                                 <ErrorMessage name="surname" component="div" className="text-red-500 text-xs mt-1" />
                             </div>
-                            {/* Email Alanı */}
                             <div>
                                 <label htmlFor='email' className='block text-sm font-medium text-gray-700 mb-1'>Email</label>
                                 <input
@@ -122,7 +116,6 @@ function RegisterComponent() {
                                 />
                                 <ErrorMessage name="email" component="div" className="text-red-500 text-xs mt-1" />
                             </div>
-                            {/* Şifre Alanı */}
                             <div>
                                 <label htmlFor='password' className='block text-sm font-medium text-gray-700 mb-1'>Şifre</label>
                                 <input
@@ -137,7 +130,6 @@ function RegisterComponent() {
                                 />
                                 <ErrorMessage name="password" component="div" className="text-red-500 text-xs mt-1" />
                             </div>
-                            {/* Şifre Tekrar Alanı */}
                             <div>
                                 <label htmlFor='passwordConfirm' className='block text-sm font-medium text-gray-700 mb-1'>Şifre Tekrar</label>
                                 <input

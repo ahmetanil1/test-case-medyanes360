@@ -13,7 +13,6 @@ import { useRouter } from "next/navigation";
 
 export default function LoginComponent({ pageRole }) {
     const router = useRouter();
-    console.log("pageRole", pageRole);
     const [isLoading, setIsLoading] = useState(false);
 
     async function handleSubmit(values, actions) {
@@ -25,7 +24,6 @@ export default function LoginComponent({ pageRole }) {
             role: pageRole,
             redirect: false,
         });
-        console.log("res", res);
 
         if (res?.error || !res || !res.ok || res.status !== 200) {
             if (
