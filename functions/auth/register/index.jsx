@@ -22,12 +22,12 @@ export const registerFunction = async (user) => {
             surname: surname
         });
         return {
-            message: "Kullanıcı başarıyla oluşturuldu.",
-            status: "success",
+            success: true,
+            status: 200,
             user: userFromDB
         };
     } catch (error) {
         console.error("Register error:", error);
-        return { message: error.message || "Internal server error.", status: "error" };
+        return { message: error.message || "Internal server error.", status: 500, error: true };
     }
 }
