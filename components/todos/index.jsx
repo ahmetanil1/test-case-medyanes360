@@ -1,122 +1,197 @@
 // components/Todos.jsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import TodoModal from './editTodoModal'; // editTodoModal yerine TodoModal olarak adlandırdık
+import React, { useState, useEffect, useMemo } from 'react';
+import TodoModal from './editTodoModal';
 import LoadingScreen from '../other/loading';
-import { useTodoStore } from '@/utils/store'; // Zustand store import edildi
+import { useTodoStore } from '@/utils/store';
 import { getAPI, postAPI } from '@/services/fetchAPI';
+import { toast, ToastContainer } from 'react-toastify';
+const ITEMS_PER_PAGE = 6;
 
-function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
-    const { todos, setTodos, addTodo, updateTodo, deleteTodo } = useTodoStore();
+// Helper function to capitalize the first letter of a string
+const capitalizeFirstLetter = (string) => {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
+};
+
+function Todos({ user }) {
+    const { todos, setTodos } = useTodoStore();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedTodo, setSelectedTodo] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Todoları API'den çekmek için useEffect
     useEffect(() => {
         const fetchTodos = async () => {
-            // user objesi veya user.id yoksa API çağrısı yapma
             if (!user || !user.id) {
-                // console.log("User bilgisi eksik, todolar yüklenemiyor."); // Debug için
                 setError("Kullanıcı bilgisi eksik. Todolar yüklenemiyor.");
+                toast.error("Kullanıcı bilgisi eksik. Todolar yüklenemiyor.");
                 return;
             }
 
             setIsLoading(true);
             try {
+                let response;
                 if (user.role === "ADMIN") {
-                    const response = await getAPI("/todos/all");
-                    if (response.todos) {
-                        setTodos(response.todos);
-                    } else {
-                        setError(response.error || "Todolar alınırken bir sorun oluştu.");
-                    }
+                    // Admin rolündeyse tüm todoları çek
+                    response = await getAPI("/todos/all");
+                } else {
+                    // Normal kullanıcıysa sadece kendi todolarını çek
+                    response = await getAPI("/todos/all", { userId: user.id });
                 }
-                else {
-                    const response = await getAPI("/todos/all", { userId: user.id });
-                    if (response.todos) {
-                        setTodos(response.todos);
-                    } else {
-                        setError(response.error || "Todolar alınırken bir sorun oluştu.");
+                if (response.todos) {
+                    let fetchedTodos = response.todos;
+
+                    // Eğer kullanıcı ADMIN ise, her todo'nun sahibinin bilgilerini çek
+                    if (user.role === "ADMIN") {
+                        const todosWithOwners = await Promise.all(
+                            fetchedTodos.map(async (todo) => {
+                                try {
+                                    // todo.userId kullanarak kullanıcının adını ve soyadını çek
+                                    const ownerResponse = await getAPI(`/users/${todo.allUserId}`);
+                                    console.log(`Todo ${todo.id} için sahip bilgisi alınıyor...`, ownerResponse);
+                                    if (ownerResponse.success && ownerResponse.data) {
+                                        return {
+                                            ...todo,
+                                            // Apply capitalizeFirstLetter here
+                                            ownerName: capitalizeFirstLetter(ownerResponse.data.name),
+                                            ownerSurname: capitalizeFirstLetter(ownerResponse.data.surname),
+                                        };
+                                    }
+                                } catch (ownerErr) {
+                                    console.error(`Todo ${todo.id} için sahip bilgisi çekilirken hata oluştu:`, ownerErr);
+                                }
+                                return todo; // Hata durumunda veya bilgi bulunamazsa orijinal todo'yu döndür
+                            })
+                        );
+                        fetchedTodos = todosWithOwners;
                     }
+
+                    setTodos(fetchedTodos);
+                    setCurrentPage(1);
+                } else {
+                    setError(response.error || "Todolar alınırken bir sorun oluştu.");
+                    toast.error(response.error || "Todolar alınırken bir sorun oluştu.");
                 }
             } catch (err) {
                 console.error("Todoları çekerken hata oluştu:", err);
                 setError(err.message || "Todolar yüklenirken bir hata oluştu.");
+                toast.error(err.message || "Todolar yüklenirken bir hata oluştu.");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        // user objesi veya user.id değiştiğinde todoları yeniden çek
-        // Sadece user ve user.id mevcutsa fetchTodos'u çağır
         if (user && user.id) {
             fetchTodos();
         }
-    }, [user, setTodos]); // setTodos, bir Zustand eylemi olduğu için genelde stabil referansa sahiptir.
+    }, [user, setTodos]);
 
     const handleEditClick = (todo) => {
         setSelectedTodo(todo);
         setIsEditModalOpen(true);
     };
 
-    const handleDeleteClick = async (todoId) => {
-        if (window.confirm("Bu todoyu silmek istediğinizden emin misiniz?")) {
-            setIsLoading(true);
-            try {
-                // Backend'iniz DELETE metodunu destekliyorsa, doğrudan "DELETE" göndermek daha iyidir.
-                // Eğer postAPI sadece POST yapabiliyor ve DELETE'i body içinde bir parametreyle bekliyorsa
-                // mevcut kullanımınız doğru olabilir. Ancak, idealde 'DELETE' metodu kullanılmalı.
-                await postAPI(`/todos/delete/${todoId}`, {}, "DELETE");
-                deleteTodo(todoId);
-                alert("Todo başarıyla silindi!");
-            } catch (err) {
-                console.error("Todoyu silerken hata oluştu:", err);
-                setError(err.message || "Todoyu silerken bir hata oluştu.");
-                alert(`Todoyu silerken hata oluştu: ${err.message || "Bilinmeyen Hata"}`);
-            } finally {
-                setIsLoading(false);
+    const handleDeleteClick = (todo) => {
+        setSelectedTodo(todo);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!selectedTodo) return;
+
+        setIsLoading(true);
+        try {
+            console.log(`Todoyu siliniyor: ${selectedTodo.id}`);
+            await postAPI(`/todos/delete/${selectedTodo.id}`, {}, "DELETE");
+            setTodos(todos.filter(todo => todo.id !== selectedTodo.id));
+            toast.success("Todo başarıyla silindi.");
+            handleModalClose();
+            if (todos.length - 1 === (currentPage - 1) * ITEMS_PER_PAGE && currentPage > 1) {
+                setCurrentPage(prev => prev - 1);
             }
+        } catch (err) {
+            console.error("Todoyu silerken hata oluştu:", err);
+            setError(err.message || "Todoyu silerken bir hata oluştu.");
+            toast.error(`Todoyu silerken hata oluştu: ${err.message || "Bilinmeyen Hata"}`);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleModalClose = () => {
         setIsEditModalOpen(false);
         setIsCreateModalOpen(false);
-        setSelectedTodo(null); // Modül kapandığında seçili todo'yu sıfırla
+        setIsDeleteModalOpen(false);
+        setSelectedTodo(null);
     };
 
-    const handleSuccess = async () => {
+    const handleSuccess = async (message) => {
         handleModalClose();
-        // İşlem başarılı olduğunda todoları yeniden çek
-        // Bu, Zustand store'daki todoların güncel olmasını sağlar.
         setIsLoading(true);
         try {
+            let response;
             if (user.role === "ADMIN") {
-                const response = await getAPI("/todos/all");
-                if (response.todos) {
-                    setTodos(response.todos);
-                } else {
-                    setError(response.error || "Todolar alınırken bir sorun oluştu.");
-                }
+                response = await getAPI("/todos/all");
+            } else {
+                response = await getAPI("/todos/all", { userId: user.id });
             }
-            else {
-                const response = await getAPI("/todos/all", { userId: user.id });
-                if (response.todos) {
-                    setTodos(response.todos);
-                } else {
-                    setError(response.error || "Todolar alınırken bir sorun oluştu.");
+            console.log("Todos başarıyla güncellendi veya oluşturuldu:", response);
+            if (response.todos) {
+                let fetchedTodos = response.todos;
+                if (user.role === "ADMIN") {
+                    const todosWithOwners = await Promise.all(
+                        fetchedTodos.map(async (todo) => {
+                            try {
+                                const ownerResponse = await getAPI(`/users/${todo.allUserId}`);
+                                console.log(`Todo ${todo.id} için sahip bilgisi alınıyor...`, ownerResponse);
+                                if (ownerResponse.success && ownerResponse.data) {
+                                    return {
+                                        ...todo,
+                                        // Apply capitalizeFirstLetter here as well for updates/creates
+                                        ownerName: capitalizeFirstLetter(ownerResponse.data.name),
+                                        ownerSurname: capitalizeFirstLetter(ownerResponse.data.surname),
+                                    };
+                                }
+                            } catch (ownerErr) {
+                                console.error(`Todo ${todo.id} için sahip bilgisi çekilirken hata oluştu:`, ownerErr);
+                            }
+                            return todo;
+                        })
+                    );
+                    fetchedTodos = todosWithOwners;
                 }
+                setTodos(fetchedTodos);
+                setCurrentPage(1);
+                toast.success(message || "İşlem başarıyla tamamlandı!");
+            } else {
+                setError(response.error || "Todolar alınırken bir sorun oluştu.");
+                toast.error(response.error || "Todolar alınırken bir sorun oluştu.");
             }
         } catch (err) {
             console.error("Todoları çekerken hata oluştu:", err);
             setError(err.message || "Todolar yüklenirken bir hata oluştu.");
+            toast.error(err.message || "Todolar yüklenirken bir hata oluştu.");
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const totalPages = Math.ceil(todos.length / ITEMS_PER_PAGE);
+
+    const currentTodos = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return todos.slice(startIndex, endIndex);
+    }, [todos, currentPage]);
+
+    const handlePageChange = (pageNumber) => {
+        if (pageNumber < 1 || pageNumber > totalPages) return;
+        setCurrentPage(pageNumber);
     };
 
     if (isLoading) {
@@ -124,7 +199,8 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
     }
 
     return (
-        <div className="container mx-auto p-4 max-w-2xl">
+        <div className="p-4 w-full mt-10">
+
             <h2 className="text-3xl font-bold text-indigo-700 mb-6 text-center">Todolarım</h2>
 
             <div className="mb-6 text-right">
@@ -138,10 +214,10 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
 
             {error ? (
                 <p className="text-center text-red-500 text-lg">Hata: {error}</p>
-            ) : todos.length > 0 ? (
-                <ul className="space-y-4">
-                    {todos.map((todo) => (
-                        <li
+            ) : currentTodos.length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    {currentTodos.map((todo) => (
+                        <div
                             key={todo.id}
                             className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300 relative"
                         >
@@ -173,6 +249,12 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
                                     }`}>
                                     {todo.isCompleted ? 'Tamamlandı' : 'Bekliyor'}
                                 </span>
+                                {/* Admin ise owner bilgilerini göster */}
+                                {user.role === "ADMIN" && todo.ownerName && todo.ownerSurname && (
+                                    <span className="px-3 py-1 bg-cyan-500 text-white rounded-full font-medium">
+                                        Sahibi: {todo.ownerName} {todo.ownerSurname}
+                                    </span>
+                                )}
                             </div>
 
                             <div className="absolute top-3 right-3 flex space-x-2">
@@ -186,7 +268,7 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
                                     </svg>
                                 </button>
                                 <button
-                                    onClick={() => handleDeleteClick(todo.id)}
+                                    onClick={() => handleDeleteClick(todo)}
                                     className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                     title="Todoyu Sil"
                                 >
@@ -195,11 +277,26 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
                                     </svg>
                                 </button>
                             </div>
-                        </li>
+                        </div>
                     ))}
-                </ul>
+                </div>
             ) : (
                 <p className="text-center text-gray-500 text-lg">Henüz hiç todo bulunmamaktadır.</p>
+            )}
+
+            {totalPages > 1 && (
+                <div className="flex justify-center mt-8 space-x-2">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                        <button
+                            key={pageNumber}
+                            onClick={() => handlePageChange(pageNumber)}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors ${pageNumber === currentPage ? 'bg-indigo-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                }`}
+                        >
+                            {pageNumber}
+                        </button>
+                    ))}
+                </div>
             )}
 
             {isEditModalOpen && selectedTodo && (
@@ -208,7 +305,7 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
                     onClose={handleModalClose}
                     todo={selectedTodo}
                     mode="edit"
-                    onSuccess={handleSuccess}
+                    onSuccess={() => handleSuccess("Todo başarıyla güncellendi!")}
                 />
             )}
 
@@ -217,10 +314,21 @@ function Todos({ user }) { // user prop'u next-auth session'dan gelmeli
                     isOpen={isCreateModalOpen}
                     onClose={handleModalClose}
                     mode="create"
-                    // 'todo' prop'unu create modunda boş göndermek doğru, çünkü yeni bir todo oluşturuluyor
-                    onSuccess={handleSuccess}
+                    onSuccess={() => handleSuccess("Yeni todo başarıyla oluşturuldu!")}
                 />
             )}
+
+            {isDeleteModalOpen && selectedTodo && (
+                <TodoModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={handleModalClose}
+                    todo={selectedTodo}
+                    mode="delete"
+                    onDelete={confirmDelete}
+                />
+            )}
+
+
         </div>
     );
 }

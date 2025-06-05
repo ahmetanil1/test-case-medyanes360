@@ -19,15 +19,19 @@ export default async function todoHandler(req, res) {
 
     const userId = authSession.user.id;
     const userRole = authSession.user.role;
+    console.log("Authenticated User ID:", userId, "Role:", userRole);
 
-    // const userId = "68401de7b2599a7ab6dbdd5b"
-    // const userRole = "ADMIN"; // authSession.user.role; // Örnek olarak ADMIN rolü kullanıldı, gerçek uygulamada authSession'dan alınmalı
     const { slug } = req.query;
+    console.log("Request Slug:", slug);
 
     const requestMethod = req.method;
     const data = req.body;
     const operation = slug?.[0];
     const todoId = slug?.[1];
+
+    console.log("Request Method:", requestMethod);
+    console.log("Operation:", operation);
+    console.log("Todo ID (from slug):", todoId);
 
     switch (requestMethod) {
         case "GET":
@@ -64,16 +68,23 @@ export default async function todoHandler(req, res) {
                         return res.status(400).json({ error: "Todo ID bilgisi eksik. Tek bir todo getirmek için gereklidir." });
                     }
                     try {
-                        const todo = await getFirstDataByWhere("Todo", { id: todoId, allUserId: userId });
+                        let deletedTodo;
+                        if (userRole === "ADMIN") {
+                            // Admin can delete any todo
+                            deletedTodo = await deleteDataByAny("Todo", { id: todoId });
+                        } else {
+                            // Regular user can only delete their own todo
+                            deletedTodo = await deleteDataByAny("Todo", { id: todoId, allUserId: userId });
+                        }
 
-                        if (todo && todo.error) {
-                            console.error("Error fetching single todo:", todo.error);
+                        if (deletedTodo && deletedTodo.error) {
+                            console.error("Error fetching single todo:", deletedTodo.error);
                             return res.status(500).json({ error: "Todo getirilirken bir hata oluştu." });
                         }
-                        if (!todo) {
+                        if (!deletedTodo || (deletedTodo.count !== undefined && deletedTodo.count === 0)) {
                             return res.status(404).json({ error: "Todo bulunamadı veya bu todo'ya erişim yetkiniz yok." });
                         }
-                        return res.status(200).json({ todo: todo });
+                        return res.status(200).json({ todo: deletedTodo });
                     } catch (error) {
                         console.error("GET /api/todos/single error:", error);
                         return res.status(500).json({ error: error.message || "Sunucu hatası oluştu." });
@@ -161,27 +172,41 @@ export default async function todoHandler(req, res) {
         case "DELETE":
             switch (operation) {
                 case "delete": // DELETE /api/todos/delete/todo_id_here
+                    console.log("Attempting to delete todo with ID:", todoId);
                     if (!todoId || typeof todoId !== 'string' || todoId.trim() === '') {
+                        console.error("Todo ID eksik or invalid for deletion.");
                         return res.status(400).json({ error: "Todo ID bilgisi eksik. Silme işlemi için gereklidir." });
                     }
                     try {
-                        const deletedTodo = await deleteDataByAny("Todo", { id: todoId, allUserId: userId });
+                        let deletedTodo;
+                        if (userRole === "ADMIN") {
+                            console.log("User is ADMIN, attempting to delete any todo.");
+                            deletedTodo = await deleteDataByAny("Todo", { id: todoId });
+                        } else {
+                            console.log("User is regular, attempting to delete own todo (userId:", userId, ")");
+                            deletedTodo = await deleteDataByAny("Todo", { id: todoId, allUserId: userId });
+                        }
+
+                        console.log("Result of deleteDataByAny:", deletedTodo);
 
                         if (deletedTodo && deletedTodo.error) {
-                            console.error("Error deleting todo:", deletedTodo.error);
-                            if (deletedTodo.error.includes("Record to delete not found.") || deletedTodo.error.includes("No records deleted.")) {
+                            console.error("Error from deleteDataByAny:", deletedTodo.error);
+                            if (deletedTodo.error.includes("Record to delete not found.")) {
                                 return res.status(404).json({ error: "Todo bulunamadı veya bu todo'ya erişim yetkiniz yok." });
                             }
                             return res.status(500).json({ error: "Todo silinirken bir hata oluştu." });
                         }
 
-                        if (!deletedTodo || (deletedTodo.count !== undefined && deletedTodo.count === 0)) {
+                        if (!deletedTodo) { // This condition is crucial for 404
+                            console.error("No todo was deleted or found matching criteria (404).");
                             return res.status(404).json({ error: "Todo bulunamadı veya bu todo'ya erişim yetkiniz yok." });
                         }
 
                         return res.status(200).json({ message: "Todo başarıyla silindi.", status: "success", data: deletedTodo });
                     } catch (error) {
-                        console.error("DELETE /api/todos/delete error:", error);
+                        console.error("DELETE /api/todos/delete caught an exception:", error);
+                        // Make sure your serviceOperation's deleteDataByAny catches internal Prisma errors
+                        // and returns an object with an 'error' property, or rethrows for consistency.
                         return res.status(500).json({ error: error.message || "Sunucu hatası oluştu." });
                     }
                 case "deleteAll": // DELETE /api/todos/deleteAll
