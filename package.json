@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@heroui/pagination": "^2.2.18",
+    "@heroui/react": "^2.7.9",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@next/font": "^14.2.15",
     "@prisma/client": "^6.9.0",
