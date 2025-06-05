@@ -24,7 +24,7 @@ const handler = async (req, res) => {
         }
     }
     else {
-        return res.status(500).json({ error: "Giriş metodunda hata oluştu." });
+        return res.status(405).json({ error: "Yalnızca POST istekleri desteklenir." });
     }
 
 };

@@ -1,29 +1,31 @@
-import authOptions from "@/pages/api/auth/[...nextauth]";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 import {
     getAllData,         // Tüm todoları getirmek için
     createNewData,      // Yeni todo oluşturmak için
     getFirstDataByWhere, // Tekil todo getirmek için (id ve userId ile)
     updateDataByAny,    // Tekil todo güncellemek için
     deleteDataByAny,    // Tekil todo silmek için
-    deleteDataAll        // Tüm todoları silmek için (where koşulu ile)
+    deleteDataAll,        // Tüm todoları silmek için (where koşulu ile)
+    getAllDataAdmin
 } from "@/services/serviceOperation";
 import { getServerSession } from "next-auth";
 
 export default async function todoHandler(req, res) {
-    // const authSession = await getServerSession(req, res, authOptions);
+    const authSession = await getServerSession(req, res, authOptions);
 
-    // if (!authSession || !authSession.user || !authSession.user.id) {
-    //     return res.status(401).json({ error: "Yetkisiz erişim. Lütfen giriş yapın." });
-    // }
+    if (!authSession || !authSession.user || !authSession.user.id) {
+        return res.status(401).json({ error: "Yetkisiz erişim. Lütfen giriş yapın." });
+    }
 
-    const userId = "68401de7b2599a7ab6dbdd5b"; 
+    const userId = authSession.user.id;
+    const userRole = authSession.user.role;
 
+    // const userId = "68401de7b2599a7ab6dbdd5b"
+    // const userRole = "ADMIN"; // authSession.user.role; // Örnek olarak ADMIN rolü kullanıldı, gerçek uygulamada authSession'dan alınmalı
     const { slug } = req.query;
-    console.log("req.query.slug:", slug);
 
     const requestMethod = req.method;
     const data = req.body;
-
     const operation = slug?.[0];
     const todoId = slug?.[1];
 
@@ -32,15 +34,29 @@ export default async function todoHandler(req, res) {
             switch (operation) {
                 case "all": // GET /api/todos/all
                     try {
-                        const todos = await getAllData("Todo", { allUserId: userId });
-
-                        if (todos && todos.error) {
-                            console.error("Error fetching all todos:", todos.error);
-                            return res.status(500).json({ error: "Tüm todolar getirilirken bir hata oluştu." });
+                        if (!userId) {
+                            return res.status(400).json({ error: "User ID eksik." });
                         }
-                        return res.status(200).json({ todos: todos });
+                        if (userRole === "ADMIN") {
+                            const todos = await getAllDataAdmin("Todo");
+                            console.log("Admin Todos:", todos);
+                            if (todos && todos.error) {
+                                console.error("Error fetching all todos for admin:", todos.error);
+                                return res.status(500).json({ error: "Tüm todolar getirilirken bir hata oluştu." });
+                            }
+                            return res.status(200).json({ todos: todos });
+                        }
+                        else {
+                            const todos = await getAllData("Todo", { allUserId: userId });
+                            if (todos && todos.error) {
+                                console.error("Error fetching all todos for user:", todos.error);
+                                return res.status(500).json({ error: "Tüm todolar getirilirken bir hata oluştu." });
+                            }
+
+                            return res.status(200).json({ todos: todos });
+                        }
                     } catch (error) {
-                        console.error("GET /api/todos/all error:", error);
+                        console.error("POST /api/todos/all error:", error);
                         return res.status(500).json({ error: error.message || "Sunucu hatası oluştu." });
                     }
                 case "single": // GET /api/todos/single/todo_id_here
@@ -86,6 +102,7 @@ export default async function todoHandler(req, res) {
                         };
 
                         const newTodo = await createNewData("Todo", newTodoData);
+                        console.log("New Todo Created:", newTodo);
 
                         if (newTodo && newTodo.error) {
                             console.error("Error creating new todo:", newTodo.error);
@@ -117,7 +134,7 @@ export default async function todoHandler(req, res) {
                         }
 
                         const updatedTodo = await updateDataByAny("Todo",
-                            { id: todoId, allUserId: userId },
+                            { id: todoId },
                             updateFields
                         );
 
