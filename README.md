@@ -1,36 +1,67 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+"Admin Giriş: /admin/login" ile gidebilirsiniz.
+email : admin@gmail.com
+şifre : admin123
 
-## Getting Started
+Proje Adı
+Bu proje, kullanıcıların yapılacaklar listelerini (todos) yönetmelerini sağlayan modern bir web uygulamasıdır. Kullanıcılar todo ekleyebilir, düzenleyebilir ve silebilirler. Yönetici (Admin) rolüne sahip kullanıcılar, todoları diğer kullanıcılara atayabilirler.
 
-First, run the development server:
+Açıklama
+Bu uygulama, React (Next.js), Zustand ile durum yönetimi ve Tailwind CSS ile arayüz tasarımını birleştirerek hızlı ve duyarlı bir kullanıcı deneyimi sunar. Backend iletişimi için özel bir fetchAPI servisi kullanılmaktadır.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Özellikler
+Todo Yönetimi: Başlık, açıklama, öncelik ve kategori ile todo oluşturma, düzenleme ve silme.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Durum Yönetimi: Zustand ile merkezi ve verimli durum yönetimi.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+Kullanıcı Rolleri: Normal kullanıcı ve yönetici (admin) rolleri ayrımı.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Yönetici Yetenekleri: Yöneticilerin yeni todoları belirli kullanıcılara atayabilmesi, tüm kullanıcıların tüm todolarını manipüle etme yetkisi.
 
-## Learn More
+Duyarlı Tasarım: Tailwind CSS ile tüm cihazlarda sorunsuz çalışan kullanıcı arayüzü.
 
-To learn more about Next.js, take a look at the following resources:
+API Entegrasyonu: Backend ile kolay iletişim için özelleştirilmiş fetchAPI servisi.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Bildirimler: react-toastify ile kullanıcı dostu bildirim mesajları.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Kurulum
+Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin:
 
-## Deploy on Vercel
+Depoyu Klonlayın:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+git clone <depo-URL>
+cd <proje-klasörü>
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bağımlılıkları Yükleyin:
+
+npm install
+# veya
+yarn install
+
+
+Veritabanı Ayarları (Backend için):
+Bu uygulamanın bir backend API'si ile çalıştığını varsayarak, backend projenizi de kurmanız ve veritabanı bağlantılarını doğru şekilde yapılandırmanız gerekmektedir. Prisma şemanızdaki Todo ve AllUser modellerinin doğru olduğundan emin olun.
+
+Kullanım
+Projeyi başlattıktan sonra, tarayıcınızda http://localhost:3000 adresine giderek uygulamayı kullanabilirsiniz.
+
+Örnek API Kullanımı (Frontend'de)
+Projede kullanılan getAPI ve postAPI fonksiyonları, @/services/fetchAPI dosyasından gelmektedir. 
+
+Teknolojiler
+Frontend:
+React.js
+Next.js (React Framework)
+Zustand (State Management)
+Tailwind CSS (Styling)
+React Toastify (Notifications)
+NextAuth.js (Authentication)
+
+Backend (Varsayımsal):
+Next.js
+Prisma (ORM)
+MongoDB (Database)
+
+
+
+NOT:: ! NORMALDE .env .gitignore İÇERİSİNDE OLMASI GEREKİR FAKAT CASE SIRASINDA BU ŞEKİLDE İSTENDİĞİ İÇİN BÖYLE PUSHLANDI.
+ 
