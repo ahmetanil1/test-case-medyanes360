@@ -27,7 +27,7 @@ export default function LoginComponent({ pageRole }) {
         });
         console.log("res", res);
 
-        if (res?.error) {
+        if (res?.error || !res || !res.ok || res.status !== 200) {
             if (
                 res.error.includes("rol") ||
                 res.error.includes("Role") ||
@@ -41,7 +41,7 @@ export default function LoginComponent({ pageRole }) {
         } else {
             toast.success("Giriş Başarılı");
             actions.resetForm();
-            router.push("/");
+            // router.push("/");
         }
 
 
