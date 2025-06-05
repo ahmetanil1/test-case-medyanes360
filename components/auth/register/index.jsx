@@ -7,9 +7,11 @@ import LoadingScreen from '@/components/other/loading';
 import Link from 'next/link';
 import 'react-toastify/dist/ReactToastify.css';
 import { postAPI } from '@/services/fetchAPI';
+import { useRouter } from 'next/navigation';
 
 function RegisterComponent() {
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     return (
         <>
@@ -52,7 +54,7 @@ function RegisterComponent() {
                             } else {
                                 toast.success("Kayıt Başarılı! Şimdi giriş yapabilirsiniz.");
                                 // Başarılı kayıttan sonra kullanıcıyı giriş sayfasına yönlendirebilirsiniz
-                                // Örneğin: router.push('/auth/login');
+                                router.push('/login');
                             }
                         } catch (error) {
                             console.error("Kayıt API hatası:", error);

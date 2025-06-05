@@ -41,7 +41,7 @@ export default function LoginComponent({ pageRole }) {
         } else {
             toast.success("Giriş Başarılı");
             actions.resetForm();
-            // router.push("/");
+            router.push("/");
         }
 
 
