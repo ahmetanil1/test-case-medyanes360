@@ -17,25 +17,40 @@ export const authOptions = {
       async authorize(credentials) {
         const { email, password, role } = credentials;
 
+        console.log("Authorize fonksiyonu çalıştı. Credentials:", { email, role }); // Debug log
+
         if (!email || !password || !role) {
+          console.error("Email, şifre veya rol eksik."); // Debug log
           throw new Error("Email, şifre ve rol zorunludur.");
         }
-        const result = await postAPI("/auth/login", { email, password, role });
-        const { data } = result;
+        try {
+          // Buradaki postAPI çağrısı kritik!
+          const result = await postAPI("/auth/login", { email, password, role });
+          const { data } = result;
 
-        if (!data || !data.id) {
-          return null; // user doğrulanamadı
+          console.log("postAPI yanıtı:", result); // Debug log: result'ın tamamını gör
+          console.log("postAPI'den gelen data:", data); // Debug log: data objesini gör
+
+          if (!data || !data.id) {
+            console.warn("Kullanıcı doğrulanamadı. Data eksik veya ID yok."); // Debug log
+            return null; // user doğrulanamadı
+          }
+
+          const user = {
+            id: data.id,
+            role: data.role,
+            name: data.name,
+            email: data.email,
+            surname: data.surname,
+          };
+
+          console.log("Kullanıcı doğrulandı:", user); // Debug log
+          return user;
+        } catch (apiError) {
+          console.error("Backend API çağrısında hata:", apiError.message); // API hatasını logla
+          // Burada kullanıcıya uygun bir hata mesajı döndürmeyi düşünebilirsiniz.
+          throw new Error("Giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.");
         }
-
-        const user = {
-          id: data.id,
-          role: data.role,
-          name: data.name,
-          email: data.email,
-          surname: data.surname,
-        };
-
-        return user;
       }
     })
   ],
