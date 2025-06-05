@@ -4,8 +4,8 @@ import React from 'react'
 
 function HomeContainer() {
     return (
-        <div>
-            <Header/>
+        <div className="flex flex-col min-h-screen">
+            <Header />
             <MainSection />
         </div>
     )
