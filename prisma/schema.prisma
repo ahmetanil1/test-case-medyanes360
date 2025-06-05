@@ -26,7 +26,7 @@ model AllUser {
 model Todo {
     id          String       @id @default(auto()) @map("_id") @db.ObjectId
     title       String
-    description String?
+    description String
     isCompleted Boolean      @default(false)
     priority    Priority     @default(MEDIUM)
     category    CategoryType @default(WORK)
